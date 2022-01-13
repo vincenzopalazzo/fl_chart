@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fl_chart/src/chart/base/base_chart/base_chart_painter.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
+import '../../helper_methods.dart';
 import '../data_pool.dart';
 import 'bar_chart_painter_test.mocks.dart';
 
@@ -188,6 +189,49 @@ void main() {
               BarChartRodData(y: 8, width: 10),
             ],
             barsSpace: 5),
+      ];
+
+      final BarChartData data = BarChartData(
+        titlesData: FlTitlesData(show: false),
+        axisTitleData: FlAxisTitleData(show: false),
+        groupsSpace: 10,
+      );
+
+      final BarChartPainter barChartPainter = BarChartPainter();
+      final holder = PaintHolder<BarChartData>(data, data, 1.0);
+
+      final groupsX = barChartPainter.calculateGroupsX(
+          viewSize, barGroups, BarChartAlignment.center, holder);
+      late Exception exception;
+      try {
+        barChartPainter.calculateGroupAndBarsPosition(
+            viewSize, groupsX + [groupsX.last], barGroups);
+      } catch (e) {
+        exception = e as Exception;
+      }
+
+      expect(true, exception.toString().contains('inconsistent'));
+    });
+
+    test('test 2', () {
+      const viewSize = Size(200, 100);
+
+      final barGroups = [
+        BarChartGroupData(
+            x: 0,
+            barRods: [
+              BarChartRodData(y: 10, width: 10),
+              BarChartRodData(y: 8, width: 10),
+              BarChartRodData(y: 8, width: 10),
+            ],
+            barsSpace: 5),
+        BarChartGroupData(
+            x: 1,
+            barRods: [
+              BarChartRodData(y: 10, width: 10),
+              BarChartRodData(y: 8, width: 10),
+            ],
+            barsSpace: 5),
         BarChartGroupData(
             x: 2,
             barRods: [
@@ -270,10 +314,36 @@ void main() {
         BarChartGroupData(
             x: 2,
             barRods: [
-              BarChartRodData(y: 10, width: 10),
-              BarChartRodData(y: 8, width: 10),
-              BarChartRodData(y: 8, width: 10),
-              BarChartRodData(y: 8, width: 10),
+              BarChartRodData(
+                y: 10,
+                width: 10,
+                backDrawRodData: BackgroundBarChartRodData(
+                  y: 8,
+                  show: true,
+                ),
+              ),
+              BarChartRodData(
+                y: 8,
+                width: 10,
+                backDrawRodData: BackgroundBarChartRodData(
+                  show: false,
+                ),
+              ),
+              BarChartRodData(
+                y: 8,
+                width: 10,
+                backDrawRodData: BackgroundBarChartRodData(
+                  y: -3,
+                  show: true,
+                ),
+              ),
+              BarChartRodData(
+                y: 8,
+                width: 10,
+                backDrawRodData: BackgroundBarChartRodData(
+                  y: 0,
+                ),
+              ),
             ],
             barsSpace: 5),
       ];
@@ -318,43 +388,160 @@ void main() {
       });
 
       barChartPainter.drawBars(_mockCanvasWrapper, barGroupsPosition, holder);
-      expect(results.length, 9);
+      expect(results.length, 11);
 
-      expect((results[0]['rrect'] as RRect),
-          RRect.fromLTRBR(28.5, 0.0, 38.5, 100.0, const Radius.circular(0.1)));
+      expect(
+          HelperMethods.equalsRRects(
+            (results[0]['rrect'] as RRect),
+            RRect.fromLTRBR(
+              28.5,
+              0.0,
+              38.5,
+              76.9,
+              const Radius.circular(0.1),
+            ),
+          ),
+          true);
       expect((results[0]['paint_color'] as Color), const Color(0x00000000));
 
-      expect((results[1]['rrect'] as RRect),
-          RRect.fromLTRBR(43.5, 20.0, 54.5, 100.0, const Radius.circular(0.2)));
+      expect(
+        HelperMethods.equalsRRects(
+          (results[1]['rrect'] as RRect),
+          RRect.fromLTRBR(
+            43.5,
+            15.4,
+            54.5,
+            76.9,
+            const Radius.circular(0.2),
+          ),
+        ),
+        true,
+      );
       expect((results[1]['paint_color'] as Color), const Color(0x11111111));
 
-      expect((results[2]['rrect'] as RRect),
-          RRect.fromLTRBR(59.5, 20.0, 71.5, 100.0, const Radius.circular(0.3)));
+      expect(
+        HelperMethods.equalsRRects(
+          (results[2]['rrect'] as RRect),
+          RRect.fromLTRBR(
+            59.5,
+            15.4,
+            71.5,
+            76.9,
+            const Radius.circular(0.3),
+          ),
+        ),
+        true,
+      );
       expect((results[2]['paint_color'] as Color), const Color(0x22222222));
 
-      expect((results[3]['rrect'] as RRect),
-          RRect.fromLTRBR(81.5, 0.0, 91.5, 100.0, const Radius.circular(0.4)));
       expect(
+        HelperMethods.equalsRRects(
+          (results[3]['rrect'] as RRect),
+          RRect.fromLTRBR(
+            81.5,
+            0.0,
+            91.5,
+            76.9,
+            const Radius.circular(0.4),
+          ),
+        ),
+        true,
+      );
+      expect(
+        HelperMethods.equalsRRects(
           (results[4]['rrect'] as RRect),
           RRect.fromLTRBR(
-              96.5, 20.0, 106.5, 100.0, const Radius.circular(5.0)));
+            96.5,
+            15.4,
+            106.5,
+            76.9,
+            const Radius.circular(5.0),
+          ),
+        ),
+        true,
+      );
 
       expect(
+        HelperMethods.equalsRRects(
           (results[5]['rrect'] as RRect),
           RRect.fromLTRBR(
-              116.5, 0.0, 126.5, 100.0, const Radius.circular(5.0)));
+            116.5,
+            15.4,
+            126.5,
+            76.9,
+            const Radius.circular(5.0),
+          ),
+        ),
+        true,
+      );
+
       expect(
+        HelperMethods.equalsRRects(
           (results[6]['rrect'] as RRect),
           RRect.fromLTRBR(
-              131.5, 20.0, 141.5, 100.0, const Radius.circular(5.0)));
+            116.5,
+            0.0,
+            126.5,
+            76.9,
+            const Radius.circular(5.0),
+          ),
+        ),
+        true,
+      );
       expect(
+        HelperMethods.equalsRRects(
           (results[7]['rrect'] as RRect),
           RRect.fromLTRBR(
-              146.5, 20.0, 156.5, 100.0, const Radius.circular(5.0)));
+            131.5,
+            15.4,
+            141.5,
+            76.9,
+            const Radius.circular(5.0),
+          ),
+        ),
+        true,
+      );
+
       expect(
+        HelperMethods.equalsRRects(
           (results[8]['rrect'] as RRect),
           RRect.fromLTRBR(
-              161.5, 20.0, 171.5, 100.0, const Radius.circular(5.0)));
+            146.5,
+            76.9,
+            156.5,
+            100.0,
+            const Radius.circular(5.0),
+          ),
+        ),
+        true,
+      );
+
+      expect(
+        HelperMethods.equalsRRects(
+          (results[9]['rrect'] as RRect),
+          RRect.fromLTRBR(
+            146.5,
+            15.4,
+            156.5,
+            76.9,
+            const Radius.circular(5.0),
+          ),
+        ),
+        true,
+      );
+      expect(
+        HelperMethods.equalsRRects(
+          (results[10]['rrect'] as RRect),
+          RRect.fromLTRBR(
+            161.5,
+            15.4,
+            171.5,
+            76.9,
+            const Radius.circular(5.0),
+          ),
+        ),
+        true,
+      );
     });
   });
 
